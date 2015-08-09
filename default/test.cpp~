@@ -1,0 +1,38 @@
+#include "cv.h"
+#include "highgui.h"
+#include "ctype.h"
+#include <opencv2/highgui/highgui.hpp>
+#include <unistd.h>
+
+int
+main (int argc, char **argv)
+{
+
+  int camera_id = 0;
+  cv::VideoCapture cap(camera_id);
+
+  if(!cap.isOpened()) return -1;
+
+  cap.set(CV_CAP_PROP_FPS, 30.0);
+
+  cv::namedWindow("capture",cv::WINDOW_AUTOSIZE);
+
+  cv::Mat frame;
+
+  for(int i=0 ;i < 100 ;i++){
+    cap >> frame;
+    if(frame.empty()) break;
+
+    cv::imwrite("test.jpg",frame);
+
+    cv::imshow("capture",frame);
+
+    sleep(10);
+
+    if(cv::waitKey(30) >= 0) break;
+  }
+
+
+  return 0;
+}
+

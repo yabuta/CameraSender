@@ -1,0 +1,44 @@
+#include "capture.h"
+
+using namespace std;
+
+int
+main (int argc, char **argv)
+{
+
+  CaptureThread *ct = new CaptureThread();
+
+  /*
+  int camera_id = 0;
+  cv::VideoCapture cap(camera_id);
+  if(!cap.isOpened()){
+    perror("cameara open error.\n");
+    return 0;
+  }
+
+  cv::Mat frame;
+  cap.set(CV_CAP_PROP_FPS, 30.0);
+  cv::namedWindow("capture",cv::WINDOW_AUTOSIZE);
+
+  while(1){
+    cap >> frame;
+    if(frame.empty()) break;
+  
+    //st->setData(frame);
+    
+    cv::imshow("capture",frame);
+    if(cv::waitKey(30) >= 0) break;
+    
+  }
+  */
+  ct->threadStart();
+  
+  char c;
+  printf("input some character for end.\n");
+  scanf("%c",&c);
+
+  delete(ct);
+
+  return 0;
+}
+
