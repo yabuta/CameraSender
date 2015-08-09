@@ -12,14 +12,18 @@ import numpy
 import socket  
 import sys
 import datetime
+import ConfigParser
+import readSetting as RS
 
 #for OpenCV3.0 python interface  
 
-class TCPHandler(SocketServer.BaseRequestHandler):    
+picturePath = ''
 
-    def handle(self):  
-        recvlen=100  
-        buffer=''   
+class TCPHandler(SocketServer.BaseRequestHandler):
+    
+    def handle(self):
+        recvlen=100
+        buffer=''
         while recvlen>0:
             data = self.request.recv(1024)
             buffer +=data
@@ -32,11 +36,16 @@ class TCPHandler(SocketServer.BaseRequestHandler):
         narray=numpy.fromstring(buffer,dtype='uint8')
         decimg=cv2.imdecode(narray,1)
         d = datetime.datetime.today()
-        filename = 'picture/result%d-%d-%d_%d:%d:%d.jpg'%(d.year,d.month,d.day,d.hour,d.minute,d.second)
+        filename = '%s/result%d-%d-%d_%d:%d:%d.jpg'%(picturePath,d.year,d.month,d.day,d.hour,d.minute,d.second)
         cv2.imwrite(filename,decimg)
 
 if __name__ == "__main__":  
-    HOST, PORT = 'localhost', 12345  
+
+    #global picturePath
+    HOST, PORT,picturePath = RS.getSettings()
+    if HOST == None:
+        print "client is abnormal terminate.\n"
+        exit()
             
     print 'starting server : port %d'%PORT
     server = SocketServer.TCPServer((HOST, PORT), TCPHandler)  
@@ -44,5 +53,3 @@ if __name__ == "__main__":
     # Activate the server; this will keep running until you  
     # interrupt the program with Ctrl-C    
     server.serve_forever()  
-            
-            

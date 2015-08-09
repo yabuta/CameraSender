@@ -11,14 +11,11 @@ import numpy
 import cv2
 import time
 import threading
+import readSettings as RS
   
 # for opencv 3.0.0
   
-HOST, PORT = "localhost", 12345  
-  
 # Receive data from the server and shut down  
-quitflag=False  
-recvlen=1  
 frame = None
 lock = threading.RLock()
 
@@ -30,9 +27,10 @@ picture convert from mat to jpeg
 """
 class SendThread(threading.Thread):
     
-    def __init__(self):
+    def __init__(self,HOST,PORT):
         super(SendThread,self).__init__()
         self.e = threading.Event()
+        self.HOST,self.PORT = HOST,PORT
 
     def run(self):
         time.sleep(1)
@@ -42,7 +40,7 @@ class SendThread(threading.Thread):
 
     def sendImageToServer(self):
         sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)  
-        sock.connect((HOST,PORT)) 
+        sock.connect((self.HOST,self.PORT)) 
 
         lock.acquire()
         if frame != None:
@@ -101,10 +99,15 @@ class CaptureThread(threading.Thread):
 
 if __name__ == '__main__':  
 
+    HOST,PORT = RS.getSettings()
+    if HOST == None or PORT == None:
+        print "client is abnormal terminate.\n"
+        exit()
+
     ct = CaptureThread()
     ct.start()
 
-    st = SendThread()
+    st = SendThread(HOST,PORT)
     st.start()
 
 
@@ -119,3 +122,4 @@ if __name__ == '__main__':
     st.stop()
     ct.stop()
         
+    print "client is normal terminate.\n"
