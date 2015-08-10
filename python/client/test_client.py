@@ -16,8 +16,6 @@ import readSettings as RS
 # for opencv 3.0.0
   
 # Receive data from the server and shut down  
-frame = None
-lock = threading.RLock()
 
 """
 send picture per 5 second.
@@ -31,6 +29,8 @@ class SendThread(threading.Thread):
         super(SendThread,self).__init__()
         self.e = threading.Event()
         self.HOST,self.PORT = HOST,PORT
+        self.frame = None
+        self.lock = threading.RLock()
 
     def run(self):
         time.sleep(1)
@@ -42,18 +42,21 @@ class SendThread(threading.Thread):
         sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)  
         sock.connect((self.HOST,self.PORT)) 
 
-        lock.acquire()
-        if frame != None:
+        self.lock.acquire()
+        if self.frame != None:
             encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),90]        
-            jpegstring = cv2.imencode('.jpeg',frame,encode_param)[1].tostring()
+            jpegstring = cv2.imencode('.jpeg',self.frame,encode_param)[1].tostring()
             print len(jpegstring)
             sock.send(jpegstring)
-        lock.release()
+        self.lock.release()
         sock.close()  
 
     def stop(self):
         self.e.set()
         self.join()
+
+    def setFrame(self,frame):
+        self.frame = frame
 
 """
 capture camera data.
@@ -69,7 +72,15 @@ class CaptureThread(threading.Thread):
 
     def run(self):
 
-        global frame
+        HOST,PORT = RS.getSettings()
+        if HOST == None or PORT == None:
+            print "client is abnormal terminate.\n"
+            exit()
+
+        st = SendThread(HOST,PORT)
+        st.start()
+
+        #global frame
         cameraid = 0
         capture = cv2.VideoCapture(0)
         
@@ -79,18 +90,19 @@ class CaptureThread(threading.Thread):
 
         while not self.e.is_set():
             #frameの取得
-            with lock:
-                ret, frame= capture.read()
+            ret, frame= capture.read()
 
             if ret == False:
                 print "capture error.\n"
                 break
 
+            st.setFrame(frame)
 
             #test when you want to show picture
             #cv2.imshow('Capture',frame)            
             #key=cv2.waitKey(100)
             #if(int(key)>0): break
+        st.stop()
 
     def stop(self):
         self.e.set()
@@ -99,16 +111,8 @@ class CaptureThread(threading.Thread):
 
 if __name__ == '__main__':  
 
-    HOST,PORT = RS.getSettings()
-    if HOST == None or PORT == None:
-        print "client is abnormal terminate.\n"
-        exit()
-
     ct = CaptureThread()
     ct.start()
-
-    st = SendThread(HOST,PORT)
-    st.start()
 
 
     time.sleep(1)
@@ -119,7 +123,6 @@ if __name__ == '__main__':
     #key=cv2.waitKey(100)
     #if(int(key)>0): break
 
-    st.stop()
     ct.stop()
         
     print "client is normal terminate.\n"
