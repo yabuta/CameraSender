@@ -14,6 +14,7 @@ import sys
 import datetime
 import ConfigParser
 import readSetting as RS
+import insertRDB as irdb
 
 #for OpenCV3.0 python interface  
 
@@ -22,31 +23,53 @@ picturePath = ''
 class TCPHandler(SocketServer.BaseRequestHandler):
     
     def handle(self):
+
         recvlen=100
         buffer=''
         while recvlen>0:
             data = self.request.recv(1024)
             buffer +=data
-            recvlen=len(data)
-  
+            recvlen=len(data)        
+
+        #split timestamp and image
+        try:
+            tm,image = buffer.split("\t",1)
+        except Exception as e:
+            print >> sys.stderr,e.message
+            return
+
+        print str(tm)
         print '%d bytes received' %len(buffer)
         if len(buffer) == 0:
             print >> sys.stderr, "error:received size is 0.\n"
             return
-        narray=numpy.fromstring(buffer,dtype='uint8')
-        decimg=cv2.imdecode(narray,1)
-        d = datetime.datetime.today()
-        filename = '%s/result%d-%d-%d_%d:%d:%d.jpg'%(picturePath,d.year,d.month,d.day,d.hour,d.minute,d.second)
-        cv2.imwrite(filename,decimg)
+        elif len(tm) == 0:
+            print >> sys.stderr,"timestamp is nothing.\n"
+            return
+        elif len(image) == 0:
+            print >> stderr,"image data is nothing"
+            return
+
+        irdb.insertData(buffer,tm)
+
+        #store to imege file
+        #narray=numpy.fromstring(buffer,dtype='uint8')
+        #decimg=cv2.imdecode(narray,1)
+        #d = datetime.datetime.today()
+        #filename = '%s/result%d-%d-%d_%d:%d:%d.jpg'%(picturePath,d.year,d.month,d.day,d.hour,d.minute,d.second)
+        #cv2.imwrite(filename,decimg)
+
+
+
 
 if __name__ == "__main__":  
 
-    #global picturePath
+    #read setting file
     HOST, PORT,picturePath = RS.getSettings()
     if HOST == None:
         print "client is abnormal terminate.\n"
         exit()
-            
+
     print 'starting server : port %d'%PORT
     server = SocketServer.TCPServer((HOST, PORT), TCPHandler)  
             

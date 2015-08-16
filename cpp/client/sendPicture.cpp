@@ -2,6 +2,7 @@
 #include "clientClass.h"
 #include <stdio.h>
 #include <pthread.h>
+#include <time.h>
 
 using namespace std;
 
@@ -60,6 +61,11 @@ public:
   }
 };
 
+/*
+一定時間ごとに画像をサーバに転送する
+*/
+
+
 class SendThread:public ThreadClass{
 
 public:
@@ -78,7 +84,6 @@ public:
     pthread_mutex_unlock(&(this->mutex)); // 優先権を破棄
   }
   cv::Mat getData(){ return frame; }
-
 
   void execute(){
 
@@ -103,6 +108,7 @@ public:
       pthread_mutex_unlock(&(this->mutex)); // 優先権を破棄
       
       vector<char> data;
+
       vector<uchar>::iterator iterator = buff.begin(); 
       while(iterator != buff.end()){
 	data.push_back(static_cast<char>(*iterator));
@@ -113,12 +119,14 @@ public:
       int nSend=client.Write(data);//データ受信
       
       printf("send size : %d\n",nSend);
-
+      
     }
   }
 
 };
 
+
+/*現在未使用*/
 class CaptureClass:public ThreadClass{
   
   public CaptureClass(){

@@ -4,12 +4,17 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <unistd.h>
 #include <iostream>
+#include <iomanip>
 #include <stdio.h>
 #include <pthread.h>
+#include <time.h>
+#include <sys/time.h>
 #include "clientClass.h"
 
 #ifndef CAPTURE_H
 #define CAPTURE_H
+
+using namespace std;
 
 class ThreadClass {
 protected:
@@ -24,7 +29,7 @@ public:
   // ランチャ
   //
   static void* executeLauncher(void* args){
-    std::cout << "executeLauncher" << std::endl;
+    cout << "executeLauncher" << std::endl;
     // 引数に渡されたインスタンスを無理やりキャストして、インスタンスメソッドを実行
     reinterpret_cast<ThreadClass*>(args)->execute();
     return (void*)NULL;
@@ -94,6 +99,32 @@ public:
   }
   cv::Mat getData(){ return frame; }
 
+  //現在時刻取得
+  static string getTime(){
+    ostringstream oss;
+    struct tm *tmp;
+    struct timeval tv;
+
+    gettimeofday(&tv,NULL);
+    tmp=localtime(&tv.tv_sec);
+    /*
+    sprintf(oss.,"%04d-%02d-%02d %02d:%02d:%02d.%3d\n",
+	   tmp->tm_year + 1900, tmp->tm_mon + 1,
+	   tmp->tm_mday, tmp->tm_hour,
+	   tmp->tm_min, tmp->tm_sec,
+	   tv.tv_usec/1000);
+    */
+    oss << setw(4) << setfill('0') << tmp->tm_year + 1900 << "-" //year
+	<< setw(2) << setfill('0') << tmp->tm_mon + 1 << "-" //month
+	<< setw(2) << setfill('0') << tmp->tm_mday << " "   //day
+	<< setw(2) << setfill('0') << tmp->tm_hour << ":" //hour
+	<< setw(2) << setfill('0') << tmp->tm_min << ":" //minute
+	<< setw(2) << setfill('0') << tmp->tm_sec << "." //second
+	<< setw(3) << tv.tv_usec/1000;  //milisecond
+
+    return oss.str();
+  }
+
 
   void run(){
 
@@ -116,18 +147,27 @@ public:
       }
 
       pthread_mutex_lock(&(this->mutex));   // 優先権を保持するまで待機
-      cv::imencode(".jpg",frame,buff,param);
+      cv::imencode(".jpg",frame,buff,param); //convert from mat to jpg
       pthread_mutex_unlock(&(this->mutex)); // 優先権を破棄
       
       vector<char> data;
-      vector<uchar>::iterator iterator = buff.begin(); 
-      while(iterator != buff.end()){
-	data.push_back(static_cast<char>(*iterator));
-	iterator++;
+      cout << "getTime:" << getTime() << endl;
+      string nowtime = getTime();
+      string::iterator timestamp_iterator = nowtime.begin();
+
+      for(; timestamp_iterator != nowtime.end() ; timestamp_iterator++){
+	data.push_back(*timestamp_iterator);
+      }
+
+      data.push_back('\t');  //character for split timestamp and image data
+
+      vector<uchar>::iterator image_iterator = buff.begin(); 
+      for(;image_iterator != buff.end();image_iterator++){
+	data.push_back(static_cast<char>(*image_iterator));
       }
       
       printf("data size is %lu\n",data.size());
-      int nSend=client.Write(data);//データ受信
+      int nSend=client.Write(data);//データ送信
       
       printf("send size : %d\n",nSend);
 
@@ -142,8 +182,6 @@ public:
 /*
 Captureもクラスを使ってやりたかったが、
 threadからvideoCaptureが動かないというなぞバグにより断念
-
-
 */
 class CaptureThread : public ThreadClass{
 
