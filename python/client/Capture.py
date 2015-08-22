@@ -5,7 +5,7 @@ import cv2
 import threading
 import readSettings as RS
 import SendData as sd
-
+import AESClass as aes
 
 """
 capture camera data.
@@ -21,12 +21,14 @@ class CaptureThread(threading.Thread):
 
     def run(self):
 
-        HOST,PORT = RS.getSettings()
-        if HOST == None or PORT == None:
+        HOST,PORT,PASS = RS.getSettings()
+        if HOST == None or PORT == None or PASS == None:
             print "client is abnormal terminate.\n"
             exit()
 
-        st = sd.SendThread(HOST,PORT)
+        encrypt = aes.AESCipher(PASS)
+
+        st = sd.SendThread(HOST,PORT,encrypt)
         st.start()
 
         #global frame

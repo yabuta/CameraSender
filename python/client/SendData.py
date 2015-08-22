@@ -15,10 +15,10 @@ picture convert from mat to jpeg
 """
 class SendThread(threading.Thread):
     
-    def __init__(self,HOST,PORT):
+    def __init__(self,HOST,PORT,encrypt):
         super(SendThread,self).__init__()
         self.e = threading.Event()
-        self.HOST,self.PORT = HOST,PORT
+        self.HOST,self.PORT,self.encrypt = HOST,PORT,encrypt
         self.frame = None
         self.lock = threading.RLock()
 
@@ -37,10 +37,10 @@ class SendThread(threading.Thread):
             encode_param = [int(cv2.IMWRITE_JPEG_QUALITY),90]
             jpegstring = cv2.imencode('.jpeg',self.frame,encode_param)[1].tostring()
 
+            jpegstring = self.encrypt.encrypt(jpegstring)
             tm = datetime.datetime.today()
 
             senddata = str(tm) + '\t' + jpegstring
-            print tm
  
             print len(senddata)
             sock.send(senddata)

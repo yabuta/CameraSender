@@ -15,6 +15,7 @@ import datetime
 import ConfigParser
 import readSetting as RS
 import insertRDB as irdb
+import AESClass as aes
 
 #for OpenCV3.0 python interface  
 
@@ -50,14 +51,20 @@ class TCPHandler(SocketServer.BaseRequestHandler):
             print >> stderr,"image data is nothing"
             return
 
-        irdb.insertData(buffer,tm)
+        irdb.insertData(image,tm)
 
         #store to imege file
-        #narray=numpy.fromstring(buffer,dtype='uint8')
-        #decimg=cv2.imdecode(narray,1)
-        #d = datetime.datetime.today()
-        #filename = '%s/result%d-%d-%d_%d:%d:%d.jpg'%(picturePath,d.year,d.month,d.day,d.hour,d.minute,d.second)
-        #cv2.imwrite(filename,decimg)
+        narray=numpy.fromstring(image,dtype='uint8')
+        decimg=cv2.imdecode(narray,1)
+        filename = 'result.jpg'
+        cv2.imwrite(filename,decimg)
+
+        en = aes.AESCipher('password')
+        image = en.decrypt(image)
+        narray=numpy.fromstring(image,dtype='uint8')
+        decimg=cv2.imdecode(narray,1)
+        filename = 'decrypt.jpg'
+        cv2.imwrite(filename,decimg)
 
 
 

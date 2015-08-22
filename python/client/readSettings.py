@@ -14,7 +14,7 @@ def getSettings():
         if not port.isdigit():
             return [None,None]
         elif int(port) >= 0 and int(port) <= 65535:
-            return [initfile.get("settings","host"),int(port)]
+            return [initfile.get("settings","host"),int(port),initfile.get("settings","password")]
         else:
             return [None,None]
     except ValueError as e:
