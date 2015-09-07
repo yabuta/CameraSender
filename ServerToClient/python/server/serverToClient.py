@@ -37,7 +37,7 @@ if __name__ == "__main__":
     #read setting file
     HOST, PORT = RS.getHostSettings()
     cert_path, key_path = RS.getKeyPath()
-    if HOST == None:
+    if HOST == None or PORT == None:
         print "client is abnormal terminate.\n"
         exit()
 

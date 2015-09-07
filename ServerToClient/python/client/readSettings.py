@@ -4,10 +4,11 @@
 import ConfigParser
 
 #settingファイルの読み込み　read setting file
-def getHostSettings():
+def getSettings():
+
     try:
         initfile = ConfigParser.SafeConfigParser()
-        initfile.read("../../../.setting/serverToclient_config.ini")
+        initfile.read("../../../.setting/serverToclient_client_config.ini")
 
         port = initfile.get("settings","port")
         if not port.isdigit():
@@ -19,20 +20,32 @@ def getHostSettings():
     except ValueError as e:
         print e.message
         return [None,None]
+
     except Exception as e:
         print e.message
         return [None,None]
 
-def getKeyPath():
+def getPASS():
     try:
         initfile = ConfigParser.SafeConfigParser()
-        initfile.read("../../../.setting/serverToclient_config.ini")
+        initfile.read("../../../.setting/serverToclient_client_config.ini")
 
-        return [initfile.get("settings","cert_path"),initfile.get("settings","key_path")]
-    except ValueError as e:
-        print e.message
-        return [None,None]
+        return initfile.get("settings","password")
     except Exception as e:
         print e.message
-        return [None,None]
+        return None
 
+
+def get_ca_path():
+    try:
+        initfile = ConfigParser.SafeConfigParser()
+        initfile.read("../../../.setting/serverToclient_client_config.ini")
+
+        return initfile.get("settings","ca_cert_path")
+    except ValueError as e: #いらんかも
+        print e.message
+        return None
+
+    except Exception as e:
+        print e.message
+        return None
