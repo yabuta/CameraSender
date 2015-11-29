@@ -16,11 +16,11 @@ class ImageProcessingThread(threading.Thread):
         self.image = None
 
         #read password for AED from setting file
-        PASS = RS.getPASS()
-        if PASS == None:
+        PASSWORD = RS.getSettings([["settings","password"]])
+        if PASSWORD == [None]:
             self.decrypt = None
         else:
-            self.decrypt = aes.AESCipher(PASS)
+            self.decrypt = aes.AESCipher(PASSWORD[0])
 
 
     def setImage(self,image):

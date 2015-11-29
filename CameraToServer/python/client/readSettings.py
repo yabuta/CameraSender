@@ -4,7 +4,7 @@
 import ConfigParser
 
 #settingファイルの読み込み　read setting file
-def getSettings():
+def getSetting():
 
     try:
         initfile = ConfigParser.SafeConfigParser()
@@ -38,3 +38,53 @@ def get_ca_path():
     except Exception as e:
         print e.message
         return None
+
+
+"""
+文字列のリストのリストを受け取ってそれぞれについて対応する設定があれば読み込む
+portの場合は範囲の確認を行う
+
+
+入力：リストのリスト
+ex) [[settings,port],[settings,host]]
+
+返り値：
+　　正常時：入力リストと同じ大きさのリスト
+　　異常時：[None]
+
+"""
+def getSettings(list):
+
+    try:
+        initfile = ConfigParser.SafeConfigParser()
+        initfile.read("../../../.setting/client_config.ini")
+
+        res = []
+
+        if len(list) == 0:
+            return [None]
+
+        for l in list:
+            #中のリストの大きさが2出ない場合はエラー
+            if len(l) != 2:
+                return [None]
+
+            #setting読み込み
+            setting = initfile.get(l[0],l[1])
+
+            if l[1] == "port":
+                if not setting.isdigit():
+                    return [None]
+                elif int(setting) < 0 and int(setting) > 65535:
+                    return [None]
+                setting = int(setting)
+            res.append(setting)
+        return res
+
+    except ValueError as e:
+        print e.message
+        return [None]
+
+    except Exception as e:
+        print e.message
+        return [None]

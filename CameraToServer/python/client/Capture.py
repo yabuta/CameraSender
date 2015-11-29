@@ -22,10 +22,12 @@ class CaptureThread(threading.Thread):
 
     def run(self):
 
-        HOST,PORT,PASS = RS.getSettings()
-        if HOST == None or PORT == None or PASS == None:
-            print "client is abnormal terminate.\n"
-            exit()
+        res = RS.getSettings([["settings","host"],["settings","port"],["settings","password"]])
+        if len(res) == 3:
+            HOST,PORT,PASS = res
+        else:
+            print "fail to get settings.\nclient is abnormal terminate.\n"
+            return
 
         encrypt = aes.AESCipher(PASS)
 
@@ -37,6 +39,7 @@ class CaptureThread(threading.Thread):
         capture = cv2.VideoCapture(0)
         
         if capture.isOpened() is False:
+            st.stop()
             print "Could not open camera"
             return
 

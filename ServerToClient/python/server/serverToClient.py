@@ -35,10 +35,17 @@ import TCPServerWithSSL as sslserver
 if __name__ == "__main__":  
 
     #read setting file
-    HOST, PORT = RS.getHostSettings()
-    cert_path, key_path = RS.getKeyPath()
-    if HOST == None or PORT == None:
-        print "client is abnormal terminate.\n"
+    res = RS.getSettings([["settings","host"],["settings","port"]])
+    if res != [None]:
+        HOST,PORT = res
+    else:
+        print "fail to get setting for host,port."
+        exit()
+    res = RS.getSettings([["settings","cert_path"],["settings","key_path"]])
+    if res != [None]:
+        cert_path,key_path = res
+    else:
+        print "fail to get setting for cert_path,key_path."
         exit()
 
     print 'starting server : port %d'%PORT

@@ -18,9 +18,11 @@ import imageProcessing as ip
 
 if __name__ == '__main__':  
 
-    HOST,PORT = RS.getSettings()
-    if HOST == None or PORT == None:
-        print "client is abnormal terminate.\n"
+    res = RS.getSettings([["settings","host"],["settings","port"]])
+    if res != [None]:
+        HOST,PORT = res
+    else:
+        print "fail to get settings.\nclient is abnormal terminate.\n"
         exit()
 
     ishow = ip.ImageShow()

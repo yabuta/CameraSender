@@ -23,10 +23,27 @@ class SendThread(threading.Thread):
         self.HOST,self.PORT,self.encrypt = HOST,PORT,encrypt
         self.frame = None
         self.lock = threading.RLock()
-        self.ca_path = RS.get_ca_path()
+        self.ca_path = RS.getSettings([["settings","ca_cert_path"]])[0]
+        #self.ca_path = RS.get_ca_path()
+
+        error_flag = False
+        error_message = []
+        if self.ca_path == None:
+            error_flag = True
+            error_message.append("fail to get ca_cert_path.")
+            
+        self.isError = [error_flag,error_message]
+
 
     def run(self):
         time.sleep(1)
+
+        #ca_pathの取得失敗の場合はエラーとする
+        if self.isError[0]:
+            for e in self.isError[1]:
+                print e
+            return
+
         while not self.e.is_set():
             start = time.time()
             self.sendImageToServer()

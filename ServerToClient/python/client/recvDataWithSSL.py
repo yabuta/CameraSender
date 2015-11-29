@@ -32,12 +32,11 @@ class RecvThread(threading.Thread):
 
     def run(self):
         #read key path and AES password from setting file
-        self.ca_path = RS.get_ca_path()
-        PASS = RS.getPASS()
-        if self.ca_path == None or PASS == None:
+        res = RS.getSettings([["settings","ca_cert_path"]])
+        if res == [None]:
             return
         else:
-            self.decrypt = aes.AESCipher(PASS)
+            self.ca_path = res[0]
 
         #recv data per 1 seconds
         time.sleep(1)

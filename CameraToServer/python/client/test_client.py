@@ -7,7 +7,6 @@
   
 import sys  
 import time
-import readSettings as RS
 import Capture
   
 # for opencv 3.0.0
